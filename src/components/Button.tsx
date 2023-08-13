@@ -1,40 +1,42 @@
 import { useContext } from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { Text, Pressable } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { Styles } from '../styles/GlobalStyles';
 
 interface ButtonProps {
     onPress: () => void;
-    title: String;
+    title: string;
     isBlue?: boolean;
     isGray?: boolean;
 }
 
 export default function Button({ title, onPress, isBlue, isGray }: ButtonProps) {
     const theme = useContext(ThemeContext);
+    
     return (
-        <TouchableOpacity
-            style={
+        <Pressable
+            style={({ pressed }) =>
                 isBlue
-                    ? Styles.btnBlue
+                    ? [Styles.btnBlue, pressed && { opacity: 0.6 }]
                     : isGray
-                    ? Styles.btnGray
-                    : theme === "light"
-                    ? Styles.btnLight
-                    : Styles.btnDark
+                    ? [Styles.btnGray, pressed && { opacity: 0.6 }]
+                    : theme === 'light'
+                    ? [Styles.btnLight, pressed && { opacity: 0.6 }]
+                    : [Styles.btnDark, pressed && { opacity: 0.6 }]
             }
-            onPress = { onPress }>
+            onPress={onPress}
+        >
             <Text
                 style={
                     isBlue || isGray
                     ? Styles.smallTextLight
-                    : theme === "dark"
+                    : theme === 'dark'
                     ? Styles.smallTextLight
                     : Styles.smallTextDark
                 }
             >
                 {title}
             </Text>
-    </TouchableOpacity>
+        </Pressable>
     );
-};
+}

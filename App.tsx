@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   switchButton: {
-    margin: 25, // Add margin bottom of 10 units
+    margin: 25, 
   },
 });

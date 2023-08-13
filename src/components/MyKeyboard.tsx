@@ -8,9 +8,13 @@ export default function MyKeyboard() {
   const [firstNumber, setFirstNumber] = React.useState("");
   const [secondNumber, setSecondNumber] = React.useState("");
   const [operation, setOperation] = React.useState("");
-  const [result, setResult] = React.useState<number | null >(null);
+  const [result, setResult] = React.useState<number | null>(null);
 
   const handleNumberPress = (buttonValue: string) => {
+    if (buttonValue === "." && firstNumber.includes(".")) {
+      alert('Error: You cannot add more than one decimal point');
+      return;
+    }
     if (firstNumber.length < 10) {
       setFirstNumber(firstNumber + buttonValue);
     }
@@ -31,7 +35,7 @@ export default function MyKeyboard() {
 
   const firstNumberDisplay = () => {
     if (result !== null) {
-        return <Text style={result < 99999 ? [Styles.screenFirstNumber, {color: myColors.result}] : [Styles.screenFirstNumber, {fontSize: 50, color: myColors.result}]}>{result?.toString()}</Text>; 
+      return <Text style={result < 99999 ? [Styles.screenFirstNumber, { color: myColors.result }] : [Styles.screenFirstNumber, { fontSize: 50, color: myColors.result }]}>{result?.toString()}</Text>;
     }
     if (firstNumber && firstNumber.length < 6) {
       return <Text style={Styles.screenFirstNumber}>{firstNumber}</Text>;
@@ -56,29 +60,33 @@ export default function MyKeyboard() {
   };
 
   const getResult = () => {
-      switch (operation) {
-        case "+":
-            clear();
-            setResult(parseInt(secondNumber) + parseInt(firstNumber));
-            break;
-        case "-":
-            clear();
-            setResult(parseInt(secondNumber) - parseInt(firstNumber));
-            break;
-        case "*":
-            clear();
-            setResult(parseInt(secondNumber) * parseInt(firstNumber));
-            break;
-        case "/":
-            clear();
-            setResult(parseInt(secondNumber) / parseInt(firstNumber));
-            break;
-        default:
-            clear();
-            setResult(0);
-            break;
+    switch (operation) {
+      case "+":
+        clear();
+        setResult(parseFloat(secondNumber) + parseFloat(firstNumber));
+        break;
+      case "-":
+        clear();
+        setResult(parseFloat(secondNumber) - parseFloat(firstNumber));
+        break;
+      case "*":
+        clear();
+        setResult(parseFloat(secondNumber) * parseFloat(firstNumber));
+        break;
+      case "/":
+        if (parseFloat(firstNumber) === 0) {
+          alert("Error: You cannot divide by zero");
+        } else {
+          clear();
+          setResult(parseFloat(secondNumber) / parseFloat(firstNumber));
         }
-    };
+        break;
+      default:
+        clear();
+        setResult(0);
+        break;
+    }
+  };
 
   return (
     <View style={Styles.viewBottom}>
