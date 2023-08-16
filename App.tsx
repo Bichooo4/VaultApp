@@ -1,36 +1,20 @@
-import { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Switch, SafeAreaView } from 'react-native';
-import { ThemeContext } from './src/context/ThemeContext';
-import { myColors } from './src/styles/colors';
-import MyKeyboard from './src/components/MyKeyboard';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from './src/screens/HomeScreen';
+import VaultScreen from './src/screens/VaultScreen';
 
-export default function App() {
-  const [theme, setTheme] = useState('light');
-  
+const Stack = createNativeStackNavigator();
+
+const App: React.FC = () => {
   return (
-    <ThemeContext.Provider value={theme}>
-      <SafeAreaView style={theme === 'light' ? styles.container : [styles.container, { backgroundColor: '#000000' }]}>
-        <StatusBar style="auto" />
-        <Switch
-          value={theme === 'light'}
-          onValueChange={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          style={styles.switchButton} 
-        />
-        <MyKeyboard />
-      </SafeAreaView>
-    </ThemeContext.Provider>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home"  component={HomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Vault" component={VaultScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: myColors.light,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  switchButton: {
-    margin: 25, 
-  },
-});
+export default App;

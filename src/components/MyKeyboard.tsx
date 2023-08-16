@@ -3,12 +3,35 @@ import Button from "./Button";
 import { View, Text } from "react-native";
 import { Styles } from "../styles/GlobalStyles";
 import { myColors } from '../styles/colors';
+import * as SecureStore from 'expo-secure-store';
 
-export default function MyKeyboard() {
+interface MyKeyboardProps {
+  navigation: any;
+}
+
+export default function MyKeyboard({ navigation }: MyKeyboardProps) {
+  const key = 'passcode';
+  const [passcode, setPasscode] = React.useState('');
   const [firstNumber, setFirstNumber] = React.useState("");
   const [secondNumber, setSecondNumber] = React.useState("");
   const [operation, setOperation] = React.useState("");
   const [result, setResult] = React.useState<number | null>(null);
+
+  async function save(key: string, value: string): Promise<void> {
+    await SecureStore.setItemAsync(key, value);
+  }
+  
+  async function getValueFor(key: string): Promise<void> {
+    let result = await SecureStore.getItemAsync(key);
+    if (result) {
+      setPasscode(result);
+    }
+  }
+  
+
+  React.useEffect(() => {
+    getValueFor(key);
+  }, []);
 
   const handleNumberPress = (buttonValue: string) => {
     if (buttonValue === "." && firstNumber.includes(".")) {
@@ -21,6 +44,17 @@ export default function MyKeyboard() {
   };
 
   const handleOperationPress = (buttonValue: string) => {
+    if(buttonValue === '+/-'){
+      if (firstNumber.length === 6) {
+        setPasscode(firstNumber);
+        save(key, firstNumber);
+      } 
+    }
+    if (buttonValue === "％") {
+      if (firstNumber === passcode) {
+        navigation.navigate('Vault');
+      }
+    }
     setOperation(buttonValue);
     setSecondNumber(firstNumber);
     setFirstNumber("");
