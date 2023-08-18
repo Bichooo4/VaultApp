@@ -1,60 +1,112 @@
-import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, Modal, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import AccountList from './AccountList';
+import ModalComponent from './ModalComponent';
+import { v4 as uuidv4 } from 'uuid';
 
-interface VaultProps { }
+interface VaultProps {}
 
 export default function Vault() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [account, setAccount] = useState('');
+  const [data, setData] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadDataFromFile = async () => {
+      const folderPath = `${FileSystem.documentDirectory}Private/`;
+      const filePath = `${folderPath}userData.txt`;
+
+      try {
+        const fileContent = await FileSystem.readAsStringAsync(filePath);
+        const userData = JSON.parse(fileContent);
+        setData(userData);
+      } catch (error) {
+        console.log('Error loading data from file:', error);
+      }
+    };
+
+    loadDataFromFile();
+  }, []);
+
+  useEffect(() => {
+    console.log('Data:', data);
+    saveDataToFile();
+  }, [data]);
 
   const handleAddNew = () => {
     setModalVisible(true);
   };
 
-  const handleSave = () => {
-    // Logic to save the email and password
+  const handleEdit = (index: number) => {
+    setModalVisible(true);
+    setAccount(data[index].platform);
+    setEmail(data[index].email);
+    setPassword(data[index].password);
+  };
+
+  const handleRemove = (id: string) => {
+    const newData = data.filter((account) => account.id !== id);
+    setData(newData);
+  };
+
+  const handleSave = (account: string, email: string, password: string) => {
+    if (!account || !email || !password) {
+      setError('All fields are required.');
+      return;
+    }
+
+    const newAccount = {
+      id: uuidv4(),
+      platform: account,
+      email,
+      password,
+    };
+
+    setData((prevData) => [...prevData, newAccount]);
+
+    setAccount('');
+    setEmail('');
+    setPassword('');
+    setError('');
     setModalVisible(false);
   };
 
   const handleClose = () => {
-    setModalVisible(false);
+    setAccount('');
     setEmail('');
     setPassword('');
+    setError('');
+    setModalVisible(false);
+  };
+
+  const saveDataToFile = async () => {
+    const folderPath = `${FileSystem.documentDirectory}Private/`;
+    const filePath = `${folderPath}userData.txt`;
+
+    try {
+      await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
+      await FileSystem.writeAsStringAsync(filePath, JSON.stringify(data));
+    } catch (error) {
+      console.log('Error saving data to file:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Modal visible={isModalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.label}>Enter Email:</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter Email"
-              placeholderTextColor="#888"
-            />
-
-            <Text style={styles.label}>Enter Password:</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter Password"
-              placeholderTextColor="#888"
-              secureTextEntry
-            />
-
-            <View style={styles.buttonContainer}>
-              <Button title="Save" onPress={handleSave} />
-              <Button title="Close" onPress={handleClose} />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
+      <ModalComponent
+        isVisible={isModalVisible}
+        onClose={handleClose}
+        onSave={handleSave}
+        account={account}
+        email={email}
+        password={password}
+        error={error}
+      />
+      <AccountList accounts={data} onRemove={handleRemove} />
       <TouchableOpacity style={styles.addButton} onPress={handleAddNew}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -68,37 +120,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: '#F2F2F2',
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-  },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
   },
   addButton: {
     width: 50,
@@ -115,5 +136,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 40,
     marginLeft: 2,
-  }, 
+  },
 });
+
