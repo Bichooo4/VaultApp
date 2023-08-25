@@ -5,30 +5,91 @@ import AccountList from './AccountList';
 import ModalComponent from './ModalComponent';
 import { v4 as uuidv4 } from 'uuid';
 
-interface VaultProps {}
+interface VaultProps { }
+interface Account {
+  id: string;
+  platform: string;
+  email: string;
+  password: string;
+}
 
 export default function Vault() {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [editAccount, setEditAccount] = useState<Account | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [account, setAccount] = useState('');
   const [data, setData] = useState([]);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const loadDataFromFile = async () => {
-      const folderPath = `${FileSystem.documentDirectory}Private/`;
-      const filePath = `${folderPath}userData.txt`;
+  const folderPath = `${FileSystem.documentDirectory}Private/`;
+  const filePath = `${folderPath}userData.txt`;
 
-      try {
-        const fileContent = await FileSystem.readAsStringAsync(filePath);
-        const userData = JSON.parse(fileContent);
-        setData(userData);
-      } catch (error) {
-        console.log('Error loading data from file:', error);
+  // Encryption and decryption functions
+  function encryption(str: string) {
+    let codes = '';
+    for (let i = 0; i < str.length; i++) {
+      const charCode = str.charCodeAt(i);
+      let paddedCode: string;
+      if (charCode < 10) {
+        paddedCode = '00' + charCode;
+      } else if (charCode < 100) {
+        paddedCode = '0' + charCode;
+      } else {
+        paddedCode = charCode.toString();
       }
-    };
+      codes += paddedCode;
+    }
+    return codes;
+  }
 
+  function decryption(codes: string) {
+    let originalString = '';
+    for (let i = 0; i < codes.length; i += 3) {
+      const asciiChunk = codes.substr(i, 3);
+      const charCode = parseInt(asciiChunk, 10);
+      const character = String.fromCharCode(charCode);
+      originalString += character;
+    }
+    return originalString;
+  }
+
+  const loadDataFromFile = async () => {
+
+    try {
+      const fileContent = await FileSystem.readAsStringAsync(filePath);
+
+      // Decrypt before parsing
+      const encryptedData = fileContent;
+      const decryptedData = decryption(encryptedData);
+
+      const userData = JSON.parse(decryptedData);
+
+      setData(userData);
+
+    } catch (error) {
+      console.log('Error loading data from file:', error);
+    }
+  };
+
+  const saveDataToFile = async () => {
+
+    try {
+
+      // Encrypt before saving
+      const encryptedData = encryption(JSON.stringify(data));
+
+      await FileSystem.writeAsStringAsync(
+        filePath, encryptedData
+      );
+
+    } catch (error) {
+      console.log('Error saving data to file:', error);
+    }
+  };
+
+  useEffect(() => {
     loadDataFromFile();
   }, []);
 
@@ -40,12 +101,14 @@ export default function Vault() {
   const handleAddNew = () => {
     setModalVisible(true);
   };
+  const handleEdit = (id: string) => {
+    const accountToEdit = data.find((account) => account.id === id);
 
-  const handleEdit = (index: number) => {
-    setModalVisible(true);
-    setAccount(data[index].platform);
-    setEmail(data[index].email);
-    setPassword(data[index].password);
+    if (accountToEdit) {
+      setModalVisible(true);
+      setEditModalVisible(true);
+      setEditAccount(accountToEdit);
+    }
   };
 
   const handleRemove = (id: string) => {
@@ -59,14 +122,34 @@ export default function Vault() {
       return;
     }
 
-    const newAccount = {
-      id: uuidv4(),
-      platform: account,
-      email,
-      password,
-    };
+    if (isEditModalVisible && editAccount) {
+      const updatedAccount = {
+        id: editAccount.id,
+        platform: account,
+        email,
+        password,
+      };
 
-    setData((prevData) => [...prevData, newAccount]);
+      const updatedData = data.map((item) => {
+        if (item.id === editAccount.id) {
+          return updatedAccount;
+        }
+        return item;
+      });
+
+      setData(updatedData);
+      setEditModalVisible(false);
+      setEditAccount(null);
+    } else {
+      const newAccount = {
+        id: uuidv4(),
+        platform: account,
+        email,
+        password,
+      };
+
+      setData((prevData) => [...prevData, newAccount]);
+    }
 
     setAccount('');
     setEmail('');
@@ -83,18 +166,6 @@ export default function Vault() {
     setModalVisible(false);
   };
 
-  const saveDataToFile = async () => {
-    const folderPath = `${FileSystem.documentDirectory}Private/`;
-    const filePath = `${folderPath}userData.txt`;
-
-    try {
-      await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
-      await FileSystem.writeAsStringAsync(filePath, JSON.stringify(data));
-    } catch (error) {
-      console.log('Error saving data to file:', error);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <ModalComponent
@@ -105,8 +176,14 @@ export default function Vault() {
         email={email}
         password={password}
         error={error}
+        isEditModalVisible={isEditModalVisible}
+        editAccount={editAccount}
       />
-      <AccountList accounts={data} onRemove={handleRemove} />
+      <AccountList
+        accounts={data}
+        onRemove={handleRemove}
+        onEdit={handleEdit}
+      />
       <TouchableOpacity style={styles.addButton} onPress={handleAddNew}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -138,4 +215,3 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
 });
-
