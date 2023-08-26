@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 4.1.2"
+    "version": ">= 4.1.2",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -12,7 +13,9 @@
         "buildType": "apk"
       }
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true
+    }
   },
   "submit": {
     "production": {}
