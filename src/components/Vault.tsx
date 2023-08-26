@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import AccountList from './AccountList';
 import ModalComponent from './ModalComponent';
@@ -25,7 +25,6 @@ export default function Vault() {
 
   const folderPath = `${FileSystem.documentDirectory}Private/`;
   const filePath = `${folderPath}userData.txt`;
-
   // Encryption and decryption functions
   function encryption(str: string) {
     let codes = '';
@@ -55,41 +54,46 @@ export default function Vault() {
     return originalString;
   }
 
-  const loadDataFromFile = async () => {
+  const checkPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Storage permission granted');
+        } else {
+          console.log('Storage permission denied');
+        }
+      } catch (error) {
+        console.log('Error requesting storage permission:', error);
+      }
+    }
+  };
 
+  const loadDataFromFile = async () => {
     try {
       const fileContent = await FileSystem.readAsStringAsync(filePath);
-
-      // Decrypt before parsing
-      const encryptedData = fileContent;
-      const decryptedData = decryption(encryptedData);
-
+      const decryptedData = decryption(fileContent);
       const userData = JSON.parse(decryptedData);
-
       setData(userData);
-
     } catch (error) {
       console.log('Error loading data from file:', error);
     }
   };
 
   const saveDataToFile = async () => {
-
     try {
-
-      // Encrypt before saving
       const encryptedData = encryption(JSON.stringify(data));
-
-      await FileSystem.writeAsStringAsync(
-        filePath, encryptedData
-      );
-
+      await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
+      await FileSystem.writeAsStringAsync(filePath, encryptedData);
     } catch (error) {
       console.log('Error saving data to file:', error);
     }
   };
 
   useEffect(() => {
+    checkPermissions();
     loadDataFromFile();
   }, []);
 
@@ -97,7 +101,6 @@ export default function Vault() {
     console.log('Data:', data);
     saveDataToFile();
   }, [data]);
-
   const handleAddNew = () => {
     setModalVisible(true);
   };
