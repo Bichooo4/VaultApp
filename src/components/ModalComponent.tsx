@@ -35,6 +35,8 @@ const ModalComponent: React.FC<ModalProps> = ({
   const [emailValue, setEmailValue] = useState(email);
   const [passwordValue, setPasswordValue] = useState(password);
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
+  const [visible, setVisible] = useState(isVisible);
+
 
   function generatePassword(length, number, symbols, uppercase, lowercase) {
     let charset = '';
@@ -107,7 +109,7 @@ const ModalComponent: React.FC<ModalProps> = ({
       setEmailValue('');
       setPasswordValue('');
     }
-  }, []);
+  }, [visible]);
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
