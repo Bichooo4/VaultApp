@@ -25,6 +25,7 @@ export default function Vault() {
 
   const folderPath = `${FileSystem.documentDirectory}Private/`;
   const filePath = `${folderPath}userData.txt`;
+  
   // Encryption and decryption functions
   function encryption(str: string) {
     let codes = '';
@@ -101,9 +102,11 @@ export default function Vault() {
     console.log('Data:', data);
     saveDataToFile();
   }, [data]);
+  
   const handleAddNew = () => {
     setModalVisible(true);
   };
+
   const handleEdit = (id: string) => {
     const accountToEdit = data.find((account) => account.id === id);
 

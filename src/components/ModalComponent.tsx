@@ -36,21 +36,56 @@ const ModalComponent: React.FC<ModalProps> = ({
   const [passwordValue, setPasswordValue] = useState(password);
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
 
+  function generatePassword(length, number, symbols, uppercase, lowercase) {
+    let charset = '';
+    let password = '';
+
+    if (number) {
+      charset += '0123456789';
+    }
+
+    if (symbols) {
+      charset += '!@#$%^&*()_+~`|}{[]\:;?><,./-=';
+    }
+
+    if (uppercase) {
+      charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    }
+
+    if (lowercase) {
+      charset += 'abcdefghijklmnopqrstuvwxyz';
+    }
+
+    for (let i = 0; i < length; i++) {
+      let randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+
+    return password;
+  }
+
+
   const handleSave = () => {
     if (!accountValue || !emailValue || !passwordValue) {
       onSave('', '', '');
       return;
     }
+    setAccountValue('');
+    setEmailValue('');
+    setPasswordValue('');
 
     onSave(accountValue, emailValue, passwordValue);
   };
 
   // Reset input values when the modal is closed
   const handleClose = () => {
-    setAccountValue('');
-    setEmailValue('');
-    setPasswordValue('');
     onClose();
+  };
+
+  // Generate a random password
+  const generateRandomPassword = () => {
+    const password = generatePassword(10, true, true, true, true);
+    setPasswordValue(password);
   };
 
   // Set initial values when the edit modal is opened
@@ -65,6 +100,14 @@ const ModalComponent: React.FC<ModalProps> = ({
       setPasswordValue(password);
     }
   }, [isEditModalVisible]);
+
+  React.useEffect(() => {
+    if (!isEditModalVisible) {
+      setAccountValue('');
+      setEmailValue('');
+      setPasswordValue('');
+    }
+  }, []);
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
@@ -112,6 +155,10 @@ const ModalComponent: React.FC<ModalProps> = ({
           </View>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <TouchableOpacity style={styles.generateButtonContainer} onPress={generateRandomPassword}>
+            <Text style={styles.generateButtonText}>Generate Password</Text>
+          </TouchableOpacity>
 
           <View style={styles.buttonContainer}>
             <Button title="Save" onPress={handleSave} />
@@ -177,6 +224,18 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     marginBottom: 10,
+  },
+  generateButtonContainer: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  generateButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
