@@ -81,6 +81,9 @@ const ModalComponent: React.FC<ModalProps> = ({
 
   // Reset input values when the modal is closed
   const handleClose = () => {
+    setAccountValue('')
+    setEmailValue('')
+    setPasswordValue('')
     onClose();
   };
 
@@ -163,8 +166,14 @@ const ModalComponent: React.FC<ModalProps> = ({
           </TouchableOpacity>
 
           <View style={styles.buttonContainer}>
-            <Button title="Save" onPress={handleSave} />
-            <Button title="Close" onPress={handleClose} />
+            {isEditModalVisible ? (
+              <Button title="Save" onPress={handleSave} />
+            ) : (
+              <>
+                <Button title="Save" onPress={handleSave} />
+                <Button title="Close" onPress={handleClose} />
+              </>
+            )}
           </View>
         </View>
       </View>
