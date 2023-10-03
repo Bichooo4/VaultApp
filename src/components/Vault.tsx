@@ -99,7 +99,6 @@ export default function Vault() {
   }, []);
 
   useEffect(() => {
-    console.log('Data:', data);
     saveDataToFile();
   }, [data]);
   

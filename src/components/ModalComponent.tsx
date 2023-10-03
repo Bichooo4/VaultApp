@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Text, TextInput, View, TouchableOpacity, Button, StyleSheet } from 'react-native';
+import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Account {
@@ -158,6 +159,9 @@ const ModalComponent: React.FC<ModalProps> = ({
               />
             </TouchableOpacity>
           </View>
+          <View style={styles.passwordStrengthContainer}>
+            <PasswordStrengthMeter password={passwordValue} />
+          </View>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -209,6 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    width: '100%',
   },
   passwordInput: {
     flex: 1,
@@ -216,6 +221,10 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     paddingHorizontal: 10,
+  },
+  passwordStrengthContainer: {
+    marginBottom: 20,
+    marginTop: 0,
   },
   passwordButtonContainer: {
     position: 'absolute',
