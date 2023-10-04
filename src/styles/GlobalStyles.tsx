@@ -5,7 +5,7 @@ export const Styles = StyleSheet.create({
     btnBlue: {
         width: 72,
         height: 72,
-        borderRadius: 24,
+        borderRadius: 36, 
         backgroundColor: myColors.blue,
         justifyContent: "center",
         alignItems: "center",
@@ -14,7 +14,7 @@ export const Styles = StyleSheet.create({
     btnDark: {
         width: 72,
         height: 72,
-        borderRadius: 24,
+        borderRadius: 36,
         backgroundColor: myColors.btnDark,
         justifyContent: "center",
         alignItems: "center",
@@ -23,7 +23,7 @@ export const Styles = StyleSheet.create({
     btnLight: {
         width: 72,
         height: 72,
-        borderRadius: 24,
+        borderRadius: 36,
         backgroundColor: myColors.white,
         justifyContent: "center",
         alignItems: "center",
@@ -32,7 +32,7 @@ export const Styles = StyleSheet.create({
     btnGray: {
         width: 72,
         height: 72,
-        borderRadius: 24,
+        borderRadius: 36,
         backgroundColor: myColors.btnGray,
         justifyContent: "center",
         alignItems: "center",
@@ -67,4 +67,4 @@ export const Styles = StyleSheet.create({
         fontWeight: '200',
         alignSelf: "flex-end",
     },
-})
+});
