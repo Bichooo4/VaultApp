@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   switchButton: {
-    margin: 25,
+    margin: '7%',
   },
 });
 
